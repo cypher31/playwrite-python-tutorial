@@ -1,22 +1,23 @@
+from pages.result import DuckDuckGoResultPage
+from pages.search import DuckDuckGoSearchPage
 from playwright.sync_api import expect, Page
 
-def test_basic_duckduckgo_search(page: Page) -> None:
-    # Given the DuckDuckGo home page is displayed
-    page.goto('https://duckduckgo.com', wait_until='load')
+def test_basic_duckduckgo_search(
+    page: Page,
+    search_page: DuckDuckGoSearchPage,
+    result_page: DuckDuckGoResultPage) -> None:
 
-    # When the user searchesss for a phrase
-    page.locator('#search_form_input_homepage').fill('panda')
-    page.locator('#search_button_homepage').click()
+    # Given the DuckDuckGo home page is displayed
+    search_page.load()
+
+    # When the user searches for a phrase
+    search_page.search('panda')
 
     # Then the search result query is the phrase
-    expect(page.locator('#search_form_input')).to_have_value('panda')
+    expect(result_page.search_input).to_have_value('panda')
 
     # And the search result links pertain to the phrase
-    page.locator('.result__title a.result__a').nth(4).wait_for()
-    titles = page.locator('.result__title a.result__a').all_text_contents()
-    matches = [t for t in titles if 'panda' in t.lower()]
-    assert len(matches) > 0
+    assert result_page.result_link_titles_contain_phrase('panda')
 
     # And the search result title contains the phrase
     expect(page).to_have_title('panda at DuckDuckGo')
-    pass
